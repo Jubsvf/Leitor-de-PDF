@@ -6,6 +6,7 @@ __pycache__/
 !.env.example
 .pgdata/
 *.log
+*.db
 .venv/
 venv/
 ENV/
