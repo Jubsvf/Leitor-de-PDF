@@ -10,13 +10,15 @@ DATABASE_URL = os.getenv(
     "postgresql+psycopg://postgres:admin@127.0.0.1:5433/fintrack_db"
 )
 
+def _make_engine(url):
+    is_postgres = url.startswith("postgresql") or url.startswith("postgres://")
+    kwargs = {"echo": False, "pool_pre_ping": True}
+    if is_postgres:
+        kwargs["connect_args"] = {"connect_timeout": 5}
+    return create_engine(url, **kwargs)
+
 try:
-    engine = create_engine(
-        DATABASE_URL,
-        echo=False,
-        pool_pre_ping=True,
-        connect_args={"connect_timeout": 5},
-    )
+    engine = _make_engine(DATABASE_URL)
     # Test the connection; if it fails, fallback will be used
     with engine.connect() as _:
         pass
