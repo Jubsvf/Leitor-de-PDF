@@ -25,7 +25,7 @@
       <a href="tipos-receita.html" class="nav-link">Tipos Receita</a>
       <a href="contas-pagar.html" class="nav-link active">Contas Pagar</a>
       <a href="contas-receber.html" class="nav-link">Contas Receber</a>
-      <a href="http://127.0.0.1:5000/apidocs" target="_blank" class="nav-link" style="color: #2563eb;">Swagger API</a>
+      <a href="/apidocs" target="_blank" class="nav-link" style="color: #2563eb;">Swagger API</a>
     </nav>
 
     <div id="alertBanner" class="alert-banner"></div>
@@ -134,7 +134,7 @@
   </div>
 
   <script>
-    const API_BASE = (window.location.port !== '5000') ? 'http://127.0.0.1:5000' : '';
+    const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port !== '5000' ? 'http://127.0.0.1:5000' : '';
 
     function formatMoney(val) {
       return Number(val).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });

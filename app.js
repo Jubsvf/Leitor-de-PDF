@@ -51,8 +51,8 @@ const jsonResult = document.getElementById('jsonResult');
 const btnSalvarConta = document.getElementById('btnSalvarConta');
 const btnText = document.getElementById('btnText');
 
-// Aponta para o backend Flask (porta 5000) caso aberto via Live Server (porta 5500) ou file:///
-const API_BASE = (window.location.port !== '5000') ? 'http://127.0.0.1:5000' : '';
+// Aponta para o backend Flask (porta 5000) caso aberto via Live Server (porta 5500) localmente
+const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port !== '5000' ? 'http://127.0.0.1:5000' : '';
 
 let ultimoResultadoExtracao = null;
 
