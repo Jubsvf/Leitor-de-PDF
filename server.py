@@ -126,9 +126,105 @@ def view_contas_receber():
     return send_from_directory(".", "contas-receber.html")
 
 
+
+# ============================================================================
+# INFORMAÇÕES DE VERSÃO E CONFIGURAÇÃO EM TEMPO REAL
+# ============================================================================
+
+# Hash do commit atual (carregado uma única vez na inicialização)
+def _get_git_hash():
+    try:
+        import subprocess
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            capture_output=True, text=True, cwd=os.path.dirname(os.path.abspath(__file__))
+        )
+        return result.stdout.strip() if result.returncode == 0 else "N/A"
+    except Exception:
+        return "N/A"
+
+GIT_COMMIT_HASH = _get_git_hash()
+GIT_REPO_URL = "https://github.com/Jubsvf/Leitor-de-PDF"
+
+# Chave em memória (pode ser sobrescrita em tempo real via /api/configurar-chave)
+_runtime_api_key = None
+
+
+@app.route("/api/version", methods=["GET"])
+def api_version():
+    """
+    Retorna informações de versão do sistema (hash do commit GitHub).
+    ---
+    tags:
+      - Sistema
+    responses:
+      200:
+        description: Dados de versionamento
+    """
+    return jsonify({
+        "commit": GIT_COMMIT_HASH,
+        "commit_short": GIT_COMMIT_HASH[:7] if GIT_COMMIT_HASH != "N/A" else "N/A",
+        "repositorio": GIT_REPO_URL,
+        "link_commit": f"{GIT_REPO_URL}/commit/{GIT_COMMIT_HASH}" if GIT_COMMIT_HASH != "N/A" else GIT_REPO_URL,
+    })
+
+
+@app.route("/api/configurar-chave", methods=["POST"])
+def configurar_chave():
+    """
+    Configura a chave da API Gemini em tempo real (sem reiniciar o servidor).
+    ---
+    tags:
+      - Sistema
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          properties:
+            api_key:
+              type: string
+              description: Chave da API do Google Gemini
+    responses:
+      200:
+        description: Chave configurada com sucesso
+      400:
+        description: Chave não informada
+    """
+    global _runtime_api_key
+    dados = request.get_json() or {}
+    chave = (dados.get("api_key") or "").strip()
+    if not chave:
+        return jsonify({"erro": "Campo 'api_key' não informado ou vazio."}), 400
+    _runtime_api_key = chave
+    os.environ["GEMINI_API_KEY"] = chave
+    return jsonify({"mensagem": "Chave da API Gemini configurada com sucesso.", "status": "ok"})
+
+
+@app.route("/api/status-chave", methods=["GET"])
+def status_chave():
+    """
+    Verifica se a chave da API Gemini está configurada.
+    ---
+    tags:
+      - Sistema
+    responses:
+      200:
+        description: Status da chave
+    """
+    chave = _runtime_api_key or os.getenv("GEMINI_API_KEY", "")
+    configurada = bool(chave and chave.strip())
+    return jsonify({
+        "configurada": configurada,
+        "origem": "runtime" if _runtime_api_key else ("env" if configurada else "nenhuma"),
+        "preview": (chave[:8] + "...") if configurada else None,
+    })
+
+
 # ============================================================================
 # PROCESSADOR DE PDF COM IA (GEMINI)
 # ============================================================================
+
 
 @app.route("/api/extrair-pdf", methods=["POST"])
 def extrair_pdf():
@@ -145,6 +241,11 @@ def extrair_pdf():
         type: file
         required: true
         description: Arquivo PDF da nota fiscal
+      - name: api_key
+        in: formData
+        type: string
+        required: false
+        description: Chave da API Gemini (opcional; substitui a configurada no servidor)
     responses:
       200:
         description: JSON estruturado com os dados extraídos e a classificação
@@ -158,7 +259,11 @@ def extrair_pdf():
     if not pdf_file.filename.lower().endswith(".pdf"):
         return jsonify({"erro": "O arquivo deve ser um documento PDF válido."}), 400
 
-    agente = Agente()
+    # A chave pode vir do form, da memória runtime ou do .env
+    chave_form = (request.form.get("api_key") or "").strip()
+    chave_efetiva = chave_form or _runtime_api_key or os.getenv("GEMINI_API_KEY", "")
+
+    agente = Agente(api_key=chave_efetiva if chave_efetiva else None)
     resultado = agente.extrair_dados(pdf_file)
     return jsonify(resultado)
 
