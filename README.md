@@ -55,8 +55,76 @@ Por utilizar tecnologias nativas, a aplicação não requer instalação de depe
 
 ---
 
-## 🔮 Próximos Passos
+## 🚀 Backend e Tecnologias Integradas
 
-- Integração com backend / Agente de IA para parsing e OCR do PDF.
-- Extração de campos estruturados da NF (Chave de Acesso, CNPJ Emitente/Destinatário, Data, Itens e Valor Total).
-- Exibição tabular e exportação dos dados extraídos (ex: JSON ou CSV).
+O backend foi desenvolvido em conformidade com os requisitos da atividade acadêmica:
+- **Linguagem**: Python 3
+- **Framework Web**: Flask com CORS e Flasgger (Documentação Swagger UI)
+- **SGBD**: PostgreSQL (banco `fintrack_db`, porta 5433 / configurável via `.env`)
+- **ORM**: SQLAlchemy com driver moderno `psycopg` (v3)
+- **Inteligência Artificial**: Agente com Google Gemini API (`google-genai`) e fallback inteligente com parsing via `pypdf`.
+
+---
+
+## 📋 Funcionalidades Implementadas
+
+1. **MANTER FORNECEDOR** (`/fornecedores` e `/api/fornecedores`):
+   - Cadastro com Razão Social, Nome Fantasia e CNPJ.
+   - Listagem com filtro por status.
+   - **Regra de negócio**: Registros não são excluídos fisicamente; são inativados e podem ser reativados.
+
+2. **MANTER CLIENTE** (`/clientes` e `/api/clientes`):
+   - Cadastro com Nome/Razão Social, Nome Fantasia e CPF/CNPJ.
+   - Inativação e reativação.
+
+3. **MANTER FATURADO** (`/faturados` e `/api/faturados`):
+   - Cadastro de Pessoa Física / Destinatário com Nome Completo e CPF.
+   - Inativação e reativação.
+
+4. **MANTER TIPO DE RECEITA** (`/tipos-receita` e `/api/tipos-receita`):
+   - Cadastro e categorização de receitas operacionais e agrícolas.
+   - Inativação e reativação.
+
+5. **MANTER TIPO DE DESPESA** (`/tipos-despesa` e `/api/tipos-despesa`):
+   - Classificação com as categorias macro oficiais (Insumos Agrícolas, Manutenção e Operação, Recursos Humanos, Serviços Operacionais, Infraestrutura e Utilidades, Administrativas, Seguros e Proteção, Impostos e Taxas, Investimentos) e suas subcategorias.
+   - Inativação e reativação.
+
+6. **REGISTRAR CONTAS A PAGAR** (`/contas-pagar` e `/api/contas-pagar`):
+   - Vínculo com Fornecedor, Faturado, NF, Emissão, Valor e Itens.
+   - Suporte a múltiplas parcelas com datas de vencimento distintas e múltiplas classificações de despesa.
+
+7. **REGISTRAR CONTAS A RECEBER** (`/contas-receber` e `/api/contas-receber`):
+   - Vínculo com Cliente, Faturado, Documento, Emissão, Valor e Itens.
+   - Suporte a múltiplas parcelas com datas de vencimento distintas e múltiplas classificações de receita.
+
+8. **PROCESSADOR DE PDF & AGENTE DE IA** (`/` e `/api/extrair-pdf`):
+   - Classe `Agente` com método `extrair_dados(pdf_file, prompt)`.
+   - Extrai os campos obrigatórios e infere a **classificação da despesa** baseada nos produtos, retornando estritamente o formato JSON solicitado.
+   - Integração com o botão *"EXTRAIR DADOS"* do frontend original e opção de persistência direta em Contas a Pagar (`/api/salvar-conta-pagar-pdf`).
+
+---
+
+## 🛠️ Como Executar o Sistema
+
+1. **Configurar variáveis de ambiente**:
+   Edite o arquivo `.env` na pasta do projeto e adicione sua chave da API do Gemini:
+   ```env
+   GEMINI_API_KEY=sua_chave_aqui
+   DATABASE_URL=postgresql+psycopg://postgres:admin@127.0.0.1:5433/fintrack_db
+   ```
+
+2. **Iniciar o Servidor Flask**:
+   ```bash
+   python server.py
+   ```
+
+3. **Acessar as Interfaces**:
+   - **Upload & Extração de PDF**: [http://127.0.0.1:5000/](http://127.0.0.1:5000/)
+   - **Manter Fornecedores**: [http://127.0.0.1:5000/fornecedores](http://127.0.0.1:5000/fornecedores)
+   - **Manter Clientes**: [http://127.0.0.1:5000/clientes](http://127.0.0.1:5000/clientes)
+   - **Manter Faturados**: [http://127.0.0.1:5000/faturados](http://127.0.0.1:5000/faturados)
+   - **Manter Tipos de Despesa**: [http://127.0.0.1:5000/tipos-despesa](http://127.0.0.1:5000/tipos-despesa)
+   - **Manter Tipos de Receita**: [http://127.0.0.1:5000/tipos-receita](http://127.0.0.1:5000/tipos-receita)
+   - **Registrar Contas a Pagar**: [http://127.0.0.1:5000/contas-pagar](http://127.0.0.1:5000/contas-pagar)
+   - **Registrar Contas a Receber**: [http://127.0.0.1:5000/contas-receber](http://127.0.0.1:5000/contas-receber)
+   - **Documentação Swagger/OpenAPI**: [http://127.0.0.1:5000/apidocs](http://127.0.0.1:5000/apidocs)

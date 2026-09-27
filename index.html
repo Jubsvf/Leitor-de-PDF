@@ -17,6 +17,19 @@
       <p class="subtitle">Carregue um PDF de nota fiscal e extraia os dados automaticamente usando IA</p>
     </header>
 
+    <!-- Navegação do Sistema -->
+    <nav class="top-nav">
+      <a href="index.html" class="nav-link active">Extração PDF</a>
+      <a href="fornecedores.html" class="nav-link">Fornecedores</a>
+      <a href="clientes.html" class="nav-link">Clientes</a>
+      <a href="faturados.html" class="nav-link">Faturados</a>
+      <a href="tipos-despesa.html" class="nav-link">Tipos Despesa</a>
+      <a href="tipos-receita.html" class="nav-link">Tipos Receita</a>
+      <a href="contas-pagar.html" class="nav-link">Contas Pagar</a>
+      <a href="contas-receber.html" class="nav-link">Contas Receber</a>
+      <a href="http://127.0.0.1:5000/apidocs" target="_blank" class="nav-link" style="color: #2563eb;">Swagger API</a>
+    </nav>
+
     <!-- Card de Upload (Figura 1) -->
     <section class="card upload-card" id="uploadCard">
       <div class="card-header">
@@ -62,6 +75,25 @@
           </svg>
           <span id="btnText">EXTRAIR DADOS</span>
         </button>
+      </div>
+    </section>
+
+    <!-- Card de Resultado da Extração (JSON) -->
+    <section class="card hidden" id="resultCard">
+      <div class="card-header" style="justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="16 18 22 12 16 6"></polyline>
+            <polyline points="8 6 2 12 8 18"></polyline>
+          </svg>
+          <span class="card-title">Resultado da Extração (JSON)</span>
+        </div>
+        <button type="button" class="custom-file-btn" id="btnSalvarConta" style="padding: 4px 12px; font-size: 12px; background: #0f172a; color: #fff; border: none; cursor: pointer;">
+          Salvar Dados
+        </button>
+      </div>
+      <div style="padding: 16px;">
+        <pre id="jsonResult" style="background: #0f172a; color: #f8fafc; padding: 14px; border-radius: 8px; font-family: monospace; font-size: 12px; overflow-x: auto; white-space: pre-wrap; line-height: 1.5;"></pre>
       </div>
     </section>
 
