@@ -27,8 +27,38 @@
       <a href="tipos-receita.html" class="nav-link">Tipos Receita</a>
       <a href="contas-pagar.html" class="nav-link">Contas Pagar</a>
       <a href="contas-receber.html" class="nav-link">Contas Receber</a>
-      <a href="http://127.0.0.1:5000/apidocs" target="_blank" class="nav-link" style="color: #2563eb;">Swagger API</a>
+      <a id="swaggerLink" href="/apidocs" target="_blank" class="nav-link" style="color: #2563eb;">Swagger API</a>
     </nav>
+
+    <!-- Card de Configuração da Chave API -->
+    <section class="card" id="apiKeyCard" style="margin-bottom: 12px;">
+      <div class="card-header">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+        </svg>
+        <span class="card-title">Chave da API Gemini</span>
+        <span id="keyStatusBadge" style="margin-left: auto; font-size: 11px; padding: 2px 10px; border-radius: 99px; background: #fef9c3; color: #854d0e; font-weight: 600;">Verificando...</span>
+      </div>
+      <div style="padding: 12px 16px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+        <input
+          type="password"
+          id="apiKeyInput"
+          placeholder="Cole sua chave Gemini aqui (opcional se já configurada no servidor)"
+          style="flex: 1; min-width: 220px; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 13px; font-family: inherit; outline: none;"
+        >
+        <button type="button" id="btnAplicarChave" style="padding: 8px 16px; background: #0f172a; color: #fff; border: none; border-radius: 6px; font-size: 13px; font-family: inherit; cursor: pointer; white-space: nowrap;">
+          Aplicar Chave
+        </button>
+        <button type="button" id="btnToggleKey" title="Mostrar/esconder chave" style="padding: 8px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; font-size: 13px;">
+          👁
+        </button>
+      </div>
+      <p style="padding: 0 16px 10px; font-size: 11px; color: #64748b; margin: 0;">
+        A chave é aplicada em tempo real (sem reiniciar o servidor). Obtê-la em
+        <a href="https://aistudio.google.com/" target="_blank" style="color: #2563eb;">Google AI Studio</a>.
+        Se já estiver no <code>.env</code>, deixe em branco.
+      </p>
+    </section>
 
     <!-- Card de Upload (Figura 1) -->
     <section class="card upload-card" id="uploadCard">
@@ -101,6 +131,18 @@
     <div class="figure-source">
       Fonte: Autor (2025)
     </div>
+
+    <!-- Rodapé de Versionamento GitHub -->
+    <footer id="versionFooter" style="text-align: center; padding: 14px 0 8px; font-size: 11px; color: #94a3b8;">
+      <span>📦 Versão: </span>
+      <a id="versionLink" href="https://github.com/Jubsvf/Leitor-de-PDF" target="_blank"
+         style="color: #2563eb; font-family: monospace; text-decoration: none; font-weight: 600;"
+         title="Ver commit no GitHub">Carregando...</a>
+      &nbsp;|&nbsp;
+      <a href="https://github.com/Jubsvf/Leitor-de-PDF" target="_blank" style="color: #64748b; text-decoration: none;">
+        GitHub: Jubsvf/Leitor-de-PDF
+      </a>
+    </footer>
   </div>
 
   <script src="app.js"></script>
