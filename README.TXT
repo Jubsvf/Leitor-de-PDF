@@ -1,4 +1,4 @@
-﻿=============================================================
+=============================================================
  LEITOR DE NOTA FISCAL - SISTEMA DE EXTRACAO COM IA
  Atividade Pratica Academica
 =============================================================
@@ -6,9 +6,9 @@
 REPOSITORIO GITHUB
 ------------------
 URL: https://github.com/Jubsvf/Leitor-de-PDF
-Codigo de Versionamento (commit atual): 23bad47f063afae87450d3c51ffe359f268ceb18
-Commit curto: 23bad47
-Link do commit: https://github.com/Jubsvf/Leitor-de-PDF/commit/23bad47f063afae87450d3c51ffe359f268ceb18
+Codigo de Versionamento (commit atual): 5e08c2fda1e60038dd3a5c3a148ae654f7b0a5fe
+Commit curto: 5e08c2f
+Link do commit: https://github.com/Jubsvf/Leitor-de-PDF/commit/5e08c2fda1e60038dd3a5c3a148ae654f7b0a5fe
 
 HISTORICO DE VERSOES (commits)
 -------------------------------
