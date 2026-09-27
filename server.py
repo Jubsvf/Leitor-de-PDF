@@ -1,7 +1,8 @@
 import os
 import datetime
 from decimal import Decimal
-from flask import Flask, request, jsonify, render_template, send_from_directory
+from functools import wraps
+from flask import Flask, request, jsonify, render_template, send_from_directory, session, redirect, url_for
 from flask_cors import CORS
 from flasgger import Swagger
 from dotenv import load_dotenv
@@ -29,7 +30,23 @@ load_dotenv()
 init_database()
 
 app = Flask(__name__, static_folder=".", template_folder="templates")
+app.secret_key = os.getenv("SECRET_KEY", "fintrack-secret-2025")
 CORS(app)
+
+# Credenciais de acesso (demonstração acadêmica)
+APP_USERS = {
+    "admin": "fintrack2025"
+}
+
+
+def login_required(f):
+    """Decorator que exige login para acessar rotas de página."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get("logged_in"):
+            return redirect(url_for("login_page"))
+        return f(*args, **kwargs)
+    return decorated
 
 # Configuração do Swagger
 app.config["SWAGGER"] = {
@@ -72,7 +89,56 @@ def parse_decimal(val):
 # ROTAS DE PÁGINAS WEB (VIEWS)
 # ============================================================================
 
+@app.route("/login")
+def login_page():
+    """Página de Login."""
+    if session.get("logged_in"):
+        return redirect(url_for("index"))
+    return send_from_directory(".", "login.html")
+
+
+@app.route("/api/login", methods=["POST"])
+def api_login():
+    """
+    Realiza o login do usuário.
+    ---
+    tags:
+      - Autenticacao
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          properties:
+            username:
+              type: string
+            password:
+              type: string
+    responses:
+      200:
+        description: Login bem-sucedido
+      401:
+        description: Credenciais inválidas
+    """
+    dados = request.get_json() or {}
+    username = (dados.get("username") or "").strip()
+    password = dados.get("password") or ""
+    if APP_USERS.get(username) == password:
+        session["logged_in"] = True
+        session["username"] = username
+        return jsonify({"ok": True, "mensagem": "Login realizado com sucesso."})
+    return jsonify({"ok": False, "erro": "Usuário ou senha inválidos."}), 401
+
+
+@app.route("/api/logout", methods=["POST"])
+def api_logout():
+    """Encerra a sessão do usuário."""
+    session.clear()
+    return jsonify({"ok": True, "mensagem": "Logout realizado com sucesso."})
+
+
 @app.route("/")
+@login_required
 def index():
     """Página principal de Upload e Extração de PDF (frontend original mantido)."""
     return send_from_directory(".", "index.html")
@@ -86,42 +152,49 @@ def serve_static(filename):
 
 @app.route("/fornecedores")
 @app.route("/fornecedores.html")
+@login_required
 def view_fornecedores():
     return send_from_directory(".", "fornecedores.html")
 
 
 @app.route("/clientes")
 @app.route("/clientes.html")
+@login_required
 def view_clientes():
     return send_from_directory(".", "clientes.html")
 
 
 @app.route("/faturados")
 @app.route("/faturados.html")
+@login_required
 def view_faturados():
     return send_from_directory(".", "faturados.html")
 
 
 @app.route("/tipos-receita")
 @app.route("/tipos-receita.html")
+@login_required
 def view_tipos_receita():
     return send_from_directory(".", "tipos-receita.html")
 
 
 @app.route("/tipos-despesa")
 @app.route("/tipos-despesa.html")
+@login_required
 def view_tipos_despesa():
     return send_from_directory(".", "tipos-despesa.html")
 
 
 @app.route("/contas-pagar")
 @app.route("/contas-pagar.html")
+@login_required
 def view_contas_pagar():
     return send_from_directory(".", "contas-pagar.html")
 
 
 @app.route("/contas-receber")
 @app.route("/contas-receber.html")
+@login_required
 def view_contas_receber():
     return send_from_directory(".", "contas-receber.html")
 
