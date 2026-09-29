@@ -6,9 +6,9 @@
 REPOSITORIO GITHUB
 ------------------
 URL: https://github.com/Jubsvf/Leitor-de-PDF
-Codigo de Versionamento (commit de producao): 3285a22eefe44777d4e79e1803f5956e3ecd5394
-Commit curto: 3285a22
-Link do commit: https://github.com/Jubsvf/Leitor-de-PDF/commit/3285a22eefe44777d4e79e1803f5956e3ecd5394
+Codigo de Versionamento (commit atual): 5c08b731332e5dce590caa979ed98966b12c2bdd
+Commit curto: 5c08b73
+Link do commit: https://github.com/Jubsvf/Leitor-de-PDF/commit/5c08b731332e5dce590caa979ed98966b12c2bdd
 
 ESTRUTURA DE PASTAS E ARQUIVOS
 ------------------------------
