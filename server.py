@@ -31,7 +31,7 @@ init_database()
 
 app = Flask(__name__, static_folder=".", template_folder="templates")
 app.secret_key = os.getenv("SECRET_KEY", "fintrack-secret-2025")
-CORS(app)
+CORS(app, supports_credentials=True)
 
 # Credenciais de acesso (demonstração acadêmica)
 APP_USERS = {
