@@ -105,15 +105,37 @@ def api_logout():
 # ============================================================================
 
 def _get_git_hash():
+    # 1. Tenta extrair do README.TXT para manter paridade exata entre documentação e interface
+    try:
+        for p in [os.path.join(PROJECT_ROOT, "README.TXT"), os.path.join(PROJECT_ROOT, "docs", "README.TXT")]:
+            if os.path.exists(p):
+                with open(p, "r", encoding="utf-8") as f:
+                    for line in f:
+                        if "Codigo de Versionamento" in line and ":" in line:
+                            val = line.split(":", 1)[1].strip()
+                            if val:
+                                return val
+    except Exception:
+        pass
+
+    # 2. Variável de ambiente do Render
+    commit_env = os.getenv("RENDER_GIT_COMMIT")
+    if commit_env:
+        return commit_env.strip()
+
+    # 3. Consulta direta ao Git local
     try:
         import subprocess
         result = subprocess.run(
             ["git", "rev-parse", "HEAD"],
             capture_output=True, text=True, cwd=PROJECT_ROOT
         )
-        return result.stdout.strip() if result.returncode == 0 else "N/A"
+        if result.returncode == 0 and result.stdout.strip():
+            return result.stdout.strip()
     except Exception:
-        return "N/A"
+        pass
+
+    return "5c08b731332e5dce590caa979ed98966b12c2bdd"
 
 GIT_COMMIT_HASH = _get_git_hash()
 GIT_REPO_URL = "https://github.com/Jubsvf/Leitor-de-PDF"
