@@ -20,7 +20,7 @@ DADOS DE LOGIN / SENHA
 -----------------------
 URL de Acesso: http://127.0.0.1:5000/login
 Usuario: admin
-Senha:   fintrack2025
+Senha:   admin123
 
 GESTAO DA CHAVE DE API (Gemini)
 ---------------------------------

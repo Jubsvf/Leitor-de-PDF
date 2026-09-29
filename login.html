@@ -37,7 +37,7 @@
       </div>
       <div class="credentials-hint">
         <strong>Credenciais de Acesso:</strong>
-        Usuario: <code>admin</code> &nbsp;|&nbsp; Senha: <code>fintrack2025</code>
+        Usuario: <code>admin</code> &nbsp;|&nbsp; Senha: <code>admin123</code>
       </div>
       <div class="error-msg" id="errorMsg">Usuario ou senha incorretos. Tente novamente.</div>
       <form id="loginForm">
@@ -68,7 +68,13 @@
       try {
         const res = await fetch(API_BASE + "/api/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username, password }), credentials: "include" });
         const data = await res.json();
-        if (res.ok && data.ok) { window.location.href = "/"; }
+        if (res.ok && data.ok) {
+          if (window.location.pathname.includes("/Leitor-de-PDF/")) {
+            window.location.href = "index.html";
+          } else {
+            window.location.href = "index.html";
+          }
+        }
         else { errorMsg.classList.add("visible"); btn.textContent = "Entrar"; btn.disabled = false; }
       } catch (err) {
         errorMsg.textContent = "Erro de conexao com o servidor.";

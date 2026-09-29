@@ -17,50 +17,37 @@
       <p class="subtitle">Carregue um PDF de nota fiscal e extraia os dados automaticamente usando IA</p>
     </header>
 
-    <!-- Navegação do Sistema -->
-    <nav class="top-nav">
-      <a href="index.html" class="nav-link active">Extração PDF</a>
-      <a href="fornecedores.html" class="nav-link">Fornecedores</a>
-      <a href="clientes.html" class="nav-link">Clientes</a>
-      <a href="faturados.html" class="nav-link">Faturados</a>
-      <a href="tipos-despesa.html" class="nav-link">Tipos Despesa</a>
-      <a href="tipos-receita.html" class="nav-link">Tipos Receita</a>
-      <a href="contas-pagar.html" class="nav-link">Contas Pagar</a>
-      <a href="contas-receber.html" class="nav-link">Contas Receber</a>
-      <a id="swaggerLink" href="/apidocs" target="_blank" class="nav-link" style="color: #2563eb;">Swagger API</a>
-    </nav>
-
     <!-- Card de Configuração da Chave API -->
-    <section class="card" id="apiKeyCard" style="margin-bottom: 12px;">
+    <section class="card" id="apiKeyCard">
       <div class="card-header">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
         </svg>
         <span class="card-title">Chave da API Gemini</span>
-        <span id="keyStatusBadge" style="margin-left: auto; font-size: 11px; padding: 2px 10px; border-radius: 99px; background: #fef9c3; color: #854d0e; font-weight: 600;">Verificando...</span>
+        <span id="keyStatusBadge" class="status-badge">Verificando...</span>
       </div>
-      <div style="padding: 12px 16px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+      <div class="api-key-form">
         <input
           type="password"
           id="apiKeyInput"
-          placeholder="Cole sua chave Gemini aqui (opcional se já configurada no servidor)"
-          style="flex: 1; min-width: 220px; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 13px; font-family: inherit; outline: none;"
+          placeholder="Cole sua chave Gemini aqui (opcional se já configurada no .env)"
+          class="api-key-input"
         >
-        <button type="button" id="btnAplicarChave" style="padding: 8px 16px; background: #0f172a; color: #fff; border: none; border-radius: 6px; font-size: 13px; font-family: inherit; cursor: pointer; white-space: nowrap;">
+        <button type="button" id="btnAplicarChave" class="btn-apply-key">
           Aplicar Chave
         </button>
-        <button type="button" id="btnToggleKey" title="Mostrar/esconder chave" style="padding: 8px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; font-size: 13px;">
+        <button type="button" id="btnToggleKey" title="Mostrar/esconder chave" class="btn-toggle-eye">
           👁
         </button>
       </div>
-      <p style="padding: 0 16px 10px; font-size: 11px; color: #64748b; margin: 0;">
+      <p class="api-key-tip">
         A chave é aplicada em tempo real (sem reiniciar o servidor). Obtê-la em
-        <a href="https://aistudio.google.com/" target="_blank" style="color: #2563eb;">Google AI Studio</a>.
+        <a href="https://aistudio.google.com/" target="_blank" rel="noopener">Google AI Studio</a>.
         Se já estiver no <code>.env</code>, deixe em branco.
       </p>
     </section>
 
-    <!-- Card de Upload (Figura 1) -->
+    <!-- Card de Upload -->
     <section class="card upload-card" id="uploadCard">
       <div class="card-header">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -93,7 +80,7 @@
             <span class="file-name" id="fileName">arquivo.pdf</span>
           </div>
           <div class="file-meta">
-            <span class="file-size" id="fileSize">0.00 MB</span>
+            <span class="file-size" id="fileSize">0.00 KB</span>
             <button type="button" class="btn-remove-file" id="btnRemoveFile" title="Remover arquivo" aria-label="Remover arquivo">&times;</button>
           </div>
         </div>
@@ -108,22 +95,130 @@
       </div>
     </section>
 
-    <!-- Card de Resultado da Extração (JSON) -->
+    <!-- Card de Resultado da Extração com Visualização Dupla (Formatada e JSON) -->
     <section class="card hidden" id="resultCard">
-      <div class="card-header" style="justify-content: space-between;">
-        <div style="display: flex; align-items: center; gap: 8px;">
+      <div class="card-header result-card-header">
+        <div class="result-title-group">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="16 18 22 12 16 6"></polyline>
             <polyline points="8 6 2 12 8 18"></polyline>
           </svg>
-          <span class="card-title">Resultado da Extração (JSON)</span>
+          <span class="card-title">Resultado da Extração</span>
         </div>
-        <button type="button" class="custom-file-btn" id="btnSalvarConta" style="padding: 4px 12px; font-size: 12px; background: #0f172a; color: #fff; border: none; cursor: pointer;">
-          Salvar Dados
-        </button>
+
+        <!-- Abas no mesmo estilo do design -->
+        <div class="result-tabs">
+          <button type="button" class="view-tab-btn active" id="tabFormatada">Visualização Formatada</button>
+          <button type="button" class="view-tab-btn" id="tabJson">JSON</button>
+        </div>
       </div>
-      <div style="padding: 16px;">
-        <pre id="jsonResult" style="background: #0f172a; color: #f8fafc; padding: 14px; border-radius: 8px; font-family: monospace; font-size: 12px; overflow-x: auto; white-space: pre-wrap; line-height: 1.5;"></pre>
+
+      <!-- VISUALIZAÇÃO FORMATADA -->
+      <div class="result-body-formatted" id="viewFormatada">
+        <!-- Banner de Classificação da Despesa -->
+        <div class="classification-box">
+          <div class="classification-badge-tag">
+            <svg class="tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+              <line x1="7" y1="7" x2="7.01" y2="7"></line>
+            </svg>
+          </div>
+          <div class="classification-info">
+            <span class="class-overline">CLASSIFICAÇÃO DA DESPESA (INTERPRETADO PELO GEMINI)</span>
+            <div class="class-title" id="fmtCategoria">MANUTENÇÃO E OPERAÇÃO</div>
+            <div class="class-terms-label">Termos detectados que embasaram a classificação:</div>
+            <div class="terms-pills" id="fmtTermos">
+              <!-- Preenchido dinamicamente -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Grid de Seções de Informações -->
+        <div class="details-grid">
+          <!-- Card: Fornecedor / Emitente -->
+          <div class="detail-box">
+            <div class="detail-box-title">
+              <span class="detail-icon">🏢</span>
+              <span>Fornecedor / Emitente</span>
+            </div>
+            <div class="field-item">
+              <span class="field-name">RAZÃO SOCIAL:</span>
+              <span class="field-text" id="fmtRazaoSocial">-</span>
+            </div>
+            <div class="field-item">
+              <span class="field-name">NOME FANTASIA:</span>
+              <span class="field-text" id="fmtNomeFantasia">-</span>
+            </div>
+            <div class="field-item">
+              <span class="field-name">CNPJ:</span>
+              <span class="field-text bold" id="fmtCnpjEmitente">-</span>
+            </div>
+          </div>
+
+          <!-- Card: Faturado / Destinatário -->
+          <div class="detail-box">
+            <div class="detail-box-title">
+              <span class="detail-icon">👤</span>
+              <span>Faturado / Destinatário</span>
+            </div>
+            <div class="field-item">
+              <span class="field-name">NOME COMPLETO:</span>
+              <span class="field-text" id="fmtNomeDestinatario">-</span>
+            </div>
+            <div class="field-item">
+              <span class="field-name">CPF / CNPJ:</span>
+              <span class="field-text bold" id="fmtCpfDestinatario">-</span>
+            </div>
+          </div>
+
+          <!-- Card: Dados da Nota Fiscal -->
+          <div class="detail-box">
+            <div class="detail-box-title">
+              <span class="detail-icon">📄</span>
+              <span>Dados da Nota Fiscal</span>
+            </div>
+            <div class="field-item">
+              <span class="field-name">NÚMERO DA NF:</span>
+              <span class="field-text bold" id="fmtNumeroNf">-</span>
+            </div>
+            <div class="field-item">
+              <span class="field-name">DATA DE EMISSÃO:</span>
+              <span class="field-text" id="fmtDataEmissao">-</span>
+            </div>
+            <div class="field-item">
+              <span class="field-name">DATA DE VENCIMENTO:</span>
+              <span class="field-text" id="fmtDataVencimento">-</span>
+            </div>
+            <div class="field-item">
+              <span class="field-name">VALOR TOTAL:</span>
+              <span class="field-text price-highlight" id="fmtValorTotal">R$ 0,00</span>
+            </div>
+            <div class="field-item">
+              <span class="field-name">PARCELAS:</span>
+              <span class="field-text" id="fmtParcelas">1 parcela(s)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Descrição dos Produtos / Serviços -->
+        <div class="products-section">
+          <div class="products-title">
+            <span class="detail-icon">📦</span>
+            <span>Descrição dos Produtos / Serviços</span>
+          </div>
+          <div class="products-box" id="fmtProdutos">
+            -
+          </div>
+        </div>
+      </div>
+
+      <!-- VISUALIZAÇÃO EM JSON -->
+      <div class="result-body-json hidden" id="viewJson">
+        <div class="json-toolbar">
+          <span class="json-toolbar-label">JSON estruturado retornado pelo processador:</span>
+          <button type="button" class="btn-copy-code" id="btnCopyJson">Copiar JSON</button>
+        </div>
+        <pre id="jsonResult"></pre>
       </div>
     </section>
 
@@ -133,13 +228,12 @@
     </div>
 
     <!-- Rodapé de Versionamento GitHub -->
-    <footer id="versionFooter" style="text-align: center; padding: 14px 0 8px; font-size: 11px; color: #94a3b8;">
+    <footer id="versionFooter">
       <span>📦 Versão: </span>
       <a id="versionLink" href="https://github.com/Jubsvf/Leitor-de-PDF" target="_blank"
-         style="color: #2563eb; font-family: monospace; text-decoration: none; font-weight: 600;"
          title="Ver commit no GitHub">Carregando...</a>
       &nbsp;|&nbsp;
-      <a href="https://github.com/Jubsvf/Leitor-de-PDF" target="_blank" style="color: #64748b; text-decoration: none;">
+      <a href="https://github.com/Jubsvf/Leitor-de-PDF" target="_blank">
         GitHub: Jubsvf/Leitor-de-PDF
       </a>
     </footer>
