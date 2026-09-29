@@ -1,130 +1,199 @@
-# Leitor de Nota Fiscal (Extração de Dados em PDF)
+# Leitor de Nota Fiscal com Inteligência Artificial (Google Gemini)
 
-Aplicação web desenvolvida para atividade prática acadêmica, projetada para fornecer uma interface limpa, intuitiva e direta para o upload de notas fiscais em formato PDF, preparando o arquivo para futura extração automatizada de dados utilizando Inteligência Artificial.
+Aplicação web desenvolvida para a atividade prática acadêmica, com foco especializado na **extração inteligente e estruturação automatizada de dados de notas fiscais em formato PDF**, utilizando Inteligência Artificial Generativa (**Google Gemini API**) e algoritmo de leitura e parsing de layout via **pypdf**.
 
 ---
 
 ## 📌 Sobre o Projeto
 
-O objetivo deste projeto é servir como camada de entrada (frontend) para um fluxo de processamento inteligente de documentos fiscais. A interface permite que o usuário selecione um arquivo PDF de nota fiscal, visualize detalhes imediatos (nome e tamanho), remova ou troque o arquivo e dispare a ação de extração de dados.
+O **Leitor de Nota Fiscal** oferece uma experiência completa e moderna para processamento de documentos fiscais em PDF. Através de uma interface limpa em formato Single Page Application (SPA), o usuário realiza o upload do documento, configura a chave da API em tempo real e obtém imediatamente os dados estruturados do emitente, destinatário, valores, parcelas, produtos e a **classificação automática da despesa**.
+
+A solução foi projetada de forma modular e desacoplada, eliminando complexidades desnecessárias e concentrando-se com alta fidelidade no objetivo principal da atividade acadêmica.
 
 ---
 
-## 📁 Estrutura do Projeto e Resumo dos Códigos
+## 🚀 Principais Funcionalidades
 
-O projeto foi construído utilizando tecnologias web fundamentais (HTML, CSS e JavaScript Vanilla), prezando pela simplicidade, clareza e facilidade de manutenção:
+1. **Autenticação e Sessão Segura**:
+   - Tela de login integrada na interface unificada (SPA), sem recarregamentos bruscos de página.
+   - Controle de sessão no backend Flask com rotas protegidas por autenticação.
+   - **Credenciais de acesso acadêmico**:
+     - **Usuário**: `admin`
+     - **Senha**: `admin123`
 
-### 1. `index.html`
-- **Função**: Define a estrutura semântica e acessível da interface.
-- **Destaques**:
-  - Cabeçalho com título e descrição do propósito do sistema.
-  - Card centralizado com ícones SVG modernos para upload.
-  - Input de arquivo customizado com texto de feedback de seleção.
-  - Card dinâmico para exibição de metadados do PDF selecionado (nome, tamanho e botão de remoção rápida).
-  - Botão de ação *"EXTRAIR DADOS"*, inicialmente desabilitado até a escolha de um arquivo válido.
-  - Legenda e atribuição de figura acadêmica (*"Fonte: Autor (2025)"*).
+2. **Gestão Flexível da Chave da API Gemini**:
+   - **Em tempo real via Interface**: campo dedicado para inserção da chave com máscara de visualização e botão de alternância (mostrar/ocultar), permitindo o uso sem necessidade de reiniciar o servidor.
+   - **Via Variável de Ambiente**: suporte a arquivo `.env` (`GEMINI_API_KEY`), protegido pelo `.gitignore`.
+   - Indicador visual em tempo real do status de configuração da chave.
 
-### 2. `style.css`
-- **Função**: Responsável por toda a identidade visual, layout e responsividade.
-- **Destaques**:
-  - Estilização limpa, sem dependências externas pesadas (apenas importação da fonte *Inter*).
-  - Paleta de cores neutras e corporativas (tons de cinza, ardósia e azul de destaque).
-  - Feedback visual claro para os estados dos botões (hover, clique e desabilitado).
-  - Layout flexível e responsivo, adaptável tanto a desktops quanto a dispositivos móveis.
+3. **Upload e Validação de Arquivo PDF**:
+   - Validação de formato (apenas arquivos `.pdf`).
+   - Exibição em tempo real do nome e tamanho do arquivo selecionado.
+   - Botão para descarte ou troca imediata do documento antes do processamento.
+   - Feedback visual com estado de carregamento durante a extração.
 
-### 3. `app.js`
-- **Função**: Controla a lógica e a interatividade da aplicação no navegador.
-- **Destaques**:
-  - **Validação de formato**: Garante que apenas arquivos `.pdf` válidos sejam aceitos, alertando o usuário caso contrário.
-  - **Cálculo de tamanho**: Converte e formata dinamicamente o peso do arquivo em bytes para uma visualização amigável (`KB` ou `MB`).
-  - **Gerenciamento de estado**: Controla a visibilidade dos metadados do arquivo e o desbloqueio do botão de extração.
-  - **Limpeza e reset**: Permite remover o arquivo atual e restaurar a interface ao estado inicial.
-  - **Ponto de integração**: Prepara o arquivo selecionado no evento de clique para envio ao futuro Agente/API de IA.
+4. **Extração Inteligente com Agente de IA**:
+   - Leitura otimizada do PDF preservando layout tabular de notas fiscais (`pypdf layout mode`).
+   - Extração estruturada via modelo **Google Gemini** com prompt especializado.
+   - **Campos extraídos com precisão**:
+     - **Emitente (Fornecedor)**: Razão Social, Nome Fantasia, CNPJ, Inscrição Estadual e Endereço Completo.
+     - **Destinatário (Faturado)**: Nome Completo / Razão Social, CPF / CNPJ e Endereço Completo.
+     - **Dados da Nota**: Número da NF, Data de Emissão, Data de Vencimento/Saída, Valor Total e Condição de Pagamento / Parcelas detalhadas.
+     - **Produtos / Serviços**: Descrição consolidada dos itens constantes na nota fiscal.
+   - **Classificação Automática da Despesa**: categorização inteligente baseada no contexto dos produtos/serviços faturados (ex.: *Manutenção e Operação*, *Insumos Agrícolas*, *Serviços Operacionais*, *Infraestrutura*, etc.), acompanhada dos termos-chave identificados que fundamentaram a decisão.
 
----
+5. **Apresentação dos Resultados em Visualização Dupla**:
+   - **Aba "Visualização Formatada"**: Cards visuais organizados por blocos lógicos (Emitente, Destinatário, Dados da Nota, Produtos e Banner em destaque com a Classificação da Despesa).
+   - **Aba "JSON Estruturado"**: Visualização do payload JSON bruto retornado pela IA, com formatação e botão de **Copiar JSON** com um único clique.
 
-## 🚀 Como Executar
+6. **Rodapé com Versionamento Dinâmico**:
+   - Integração com a rota `/api/version`, que lê o hash do commit Git atual (`588c0a4`) em tempo real e provê link direto para o repositório oficial no GitHub.
 
-Por utilizar tecnologias nativas, a aplicação não requer instalação de dependências ou servidores complexos:
-
-1. Clone o repositório:
-   ```bash
-   git clone https://github.com/Jubsvf/Leitor-de-PDF.git
-   ```
-2. Abra a pasta do projeto e dê dois cliques no arquivo `index.html` (ou abra-o diretamente no navegador de sua preferência).
+7. **Documentação Interativa Swagger / OpenAPI**:
+   - Endpoints REST documentados e testáveis interativamente via Swagger UI no endpoint `/apidocs`.
 
 ---
 
-## 🚀 Backend e Tecnologias Integradas
+## 📁 Estrutura Organizada do Projeto
 
-O backend foi desenvolvido em conformidade com os requisitos da atividade acadêmica:
-- **Linguagem**: Python 3
-- **Framework Web**: Flask com CORS e Flasgger (Documentação Swagger UI)
-- **SGBD**: PostgreSQL (banco `fintrack_db`, porta 5433 / configurável via `.env`)
-- **ORM**: SQLAlchemy com driver moderno `psycopg` (v3)
-- **Inteligência Artificial**: Agente com Google Gemini API (`google-genai`) e fallback inteligente com parsing via `pypdf`.
+O repositório adota uma arquitetura limpa, modular e com separação estrita de responsabilidades:
 
----
-
-## 📋 Funcionalidades Implementadas
-
-1. **MANTER FORNECEDOR** (`/fornecedores` e `/api/fornecedores`):
-   - Cadastro com Razão Social, Nome Fantasia e CNPJ.
-   - Listagem com filtro por status.
-   - **Regra de negócio**: Registros não são excluídos fisicamente; são inativados e podem ser reativados.
-
-2. **MANTER CLIENTE** (`/clientes` e `/api/clientes`):
-   - Cadastro com Nome/Razão Social, Nome Fantasia e CPF/CNPJ.
-   - Inativação e reativação.
-
-3. **MANTER FATURADO** (`/faturados` e `/api/faturados`):
-   - Cadastro de Pessoa Física / Destinatário com Nome Completo e CPF.
-   - Inativação e reativação.
-
-4. **MANTER TIPO DE RECEITA** (`/tipos-receita` e `/api/tipos-receita`):
-   - Cadastro e categorização de receitas operacionais e agrícolas.
-   - Inativação e reativação.
-
-5. **MANTER TIPO DE DESPESA** (`/tipos-despesa` e `/api/tipos-despesa`):
-   - Classificação com as categorias macro oficiais (Insumos Agrícolas, Manutenção e Operação, Recursos Humanos, Serviços Operacionais, Infraestrutura e Utilidades, Administrativas, Seguros e Proteção, Impostos e Taxas, Investimentos) e suas subcategorias.
-   - Inativação e reativação.
-
-6. **REGISTRAR CONTAS A PAGAR** (`/contas-pagar` e `/api/contas-pagar`):
-   - Vínculo com Fornecedor, Faturado, NF, Emissão, Valor e Itens.
-   - Suporte a múltiplas parcelas com datas de vencimento distintas e múltiplas classificações de despesa.
-
-7. **REGISTRAR CONTAS A RECEBER** (`/contas-receber` e `/api/contas-receber`):
-   - Vínculo com Cliente, Faturado, Documento, Emissão, Valor e Itens.
-   - Suporte a múltiplas parcelas com datas de vencimento distintas e múltiplas classificações de receita.
-
-8. **PROCESSADOR DE PDF & AGENTE DE IA** (`/` e `/api/extrair-pdf`):
-   - Classe `Agente` com método `extrair_dados(pdf_file, prompt)`.
-   - Extrai os campos obrigatórios e infere a **classificação da despesa** baseada nos produtos, retornando estritamente o formato JSON solicitado.
-   - Integração com o botão *"EXTRAIR DADOS"* do frontend original e opção de persistência direta em Contas a Pagar (`/api/salvar-conta-pagar-pdf`).
+```text
+Leitor-de-PDF/
+├── frontend/                  # Camada de Apresentação (Interface SPA)
+│   ├── index.html             # Estrutura unificada (Login integrado + Dashboard de Extração)
+│   ├── style.css              # Identidade visual moderna, tema escuro e responsividade
+│   └── app.js                 # Controlador frontend (sessão, upload, tabs e consumo da API)
+├── backend/                   # Camada de Servidor e Regras de Negócio
+│   ├── server.py              # Servidor Flask, rotas REST, sessão e documentação Swagger
+│   ├── agente.py              # Agente de IA Gemini e rotinas de leitura de PDF com pypdf
+│   └── database/              # Camada de persistência relacional (SQLAlchemy / SQLite / PostgreSQL)
+│       ├── __init__.py
+│       ├── connection.py      # Gerenciamento de conexão com banco de dados
+│       ├── models.py          # Modelos de entidades de dados
+│       ├── seed.py            # Carga inicial de dados
+│       └── fintrack.db        # Banco de dados local SQLite
+├── deploy/                    # Configurações de Deploy em Nuvem
+│   ├── Procfile               # Configuração WSGI Gunicorn para Render / Heroku
+│   └── render.yaml            # Infraestrutura como código para publicação no Render
+├── docs/                      # Documentação Acadêmica
+│   └── README.TXT             # Relatório técnico acadêmico e histórico de versões
+├── requirements.txt           # Dependências do projeto Python
+├── .env.example               # Exemplo de configuração de variáveis de ambiente
+└── README.md                  # Documentação principal do repositório
+```
 
 ---
 
-## 🛠️ Como Executar o Sistema
+## 🛠️ Tecnologias Utilizadas
 
-1. **Configurar variáveis de ambiente**:
-   Edite o arquivo `.env` na pasta do projeto e adicione sua chave da API do Gemini:
-   ```env
-   GEMINI_API_KEY=sua_chave_aqui
-   DATABASE_URL=postgresql+psycopg://postgres:admin@127.0.0.1:5433/fintrack_db
-   ```
+- **Linguagem**: Python 3.10+
+- **Backend / API REST**: [Flask](https://flask.palletsprojects.com/), [Flask-CORS](https://flask-cors.readthedocs.io/), [Flasgger (Swagger/OpenAPI)](https://github.com/flasgger/flasgger)
+- **Servidor de Aplicação (WSGI)**: [Gunicorn](https://gunicorn.org/)
+- **Inteligência Artificial**: [Google Gemini API (google-genai)](https://ai.google.dev/)
+- **Processamento de PDF**: [pypdf](https://pypdf.readthedocs.io/)
+- **Persistência / ORM**: [SQLAlchemy](https://www.sqlalchemy.org/) com drivers SQLite e PostgreSQL
+- **Frontend**: HTML5 semântico, CSS3 moderno (Custom Properties, Flexbox, Grid, Animações e Glassmorphism) e JavaScript Vanilla (SPA sem dependências pesadas)
 
-2. **Iniciar o Servidor Flask**:
-   ```bash
-   python server.py
-   ```
+---
 
-3. **Acessar as Interfaces**:
-   - **Upload & Extração de PDF**: [http://127.0.0.1:5000/](http://127.0.0.1:5000/)
-   - **Manter Fornecedores**: [http://127.0.0.1:5000/fornecedores](http://127.0.0.1:5000/fornecedores)
-   - **Manter Clientes**: [http://127.0.0.1:5000/clientes](http://127.0.0.1:5000/clientes)
-   - **Manter Faturados**: [http://127.0.0.1:5000/faturados](http://127.0.0.1:5000/faturados)
-   - **Manter Tipos de Despesa**: [http://127.0.0.1:5000/tipos-despesa](http://127.0.0.1:5000/tipos-despesa)
-   - **Manter Tipos de Receita**: [http://127.0.0.1:5000/tipos-receita](http://127.0.0.1:5000/tipos-receita)
-   - **Registrar Contas a Pagar**: [http://127.0.0.1:5000/contas-pagar](http://127.0.0.1:5000/contas-pagar)
-   - **Registrar Contas a Receber**: [http://127.0.0.1:5000/contas-receber](http://127.0.0.1:5000/contas-receber)
-   - **Documentação Swagger/OpenAPI**: [http://127.0.0.1:5000/apidocs](http://127.0.0.1:5000/apidocs)
+## 💻 Como Executar Localmente
+
+### 1. Pré-requisitos
+- Python 3.10 ou superior instalado na máquina.
+- Git instalado (opcional, para clonagem).
+
+### 2. Clonar o Repositório
+```bash
+git clone https://github.com/Jubsvf/Leitor-de-PDF.git
+cd Leitor-de-PDF
+```
+
+### 3. Criar e Ativar o Ambiente Virtual (Recomendado)
+```bash
+# Windows:
+python -m venv venv
+venv\Scripts\activate
+
+# Linux / macOS:
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### 4. Instalar as Dependências
+```bash
+pip install -r requirements.txt
+```
+
+### 5. Configurar as Variáveis de Ambiente (Opcional)
+Você pode criar um arquivo `.env` na raiz do projeto copiando o modelo de `.env.example`:
+```env
+GEMINI_API_KEY=sua_chave_gemini_aqui
+SECRET_KEY=fintrack-secret-chave-segura
+```
+> *Nota: Se preferir, você não precisa criar o arquivo `.env`; a chave da API do Gemini pode ser informada diretamente na interface após o login.*
+
+### 6. Iniciar o Servidor Flask
+A partir da raiz do projeto:
+```bash
+python backend/server.py
+```
+*(Ou acesse a pasta `backend` com `cd backend` e execute `python server.py`)*
+
+### 7. Acessar a Aplicação
+Abra seu navegador e acesse:
+- **Aplicação Principal**: [http://127.0.0.1:5000/](http://127.0.0.1:5000/) (ou [http://127.0.0.1:5000/login](http://127.0.0.1:5000/login))
+- **Documentação da API (Swagger)**: [http://127.0.0.1:5000/apidocs](http://127.0.0.1:5000/apidocs)
+
+---
+
+## 🔑 Credenciais de Acesso e Uso
+
+| Campo | Valor Padrão |
+| :--- | :--- |
+| **Usuário** | `admin` |
+| **Senha** | `admin123` |
+
+### Fluxo de Uso:
+1. Faça login utilizando as credenciais acima.
+2. No card **Chave da API Gemini**, insira sua chave caso não a tenha definido no `.env` (obtenha gratuitamente no [Google AI Studio](https://aistudio.google.com/)).
+3. Clique em **Escolher arquivo** e selecione uma Nota Fiscal em formato PDF.
+4. Clique no botão **EXTRAIR DADOS**.
+5. Visualize os dados formatados nos cards ou navegue até a aba **JSON Estruturado** para inspecionar ou copiar o payload completo.
+
+---
+
+## 📡 Endpoints da API REST
+
+| Método | Rota | Autenticação | Descrição |
+| :--- | :--- | :---: | :--- |
+| `GET` | `/` ou `/login` | Pública | Entrega a aplicação web unificada (SPA). |
+| `GET` | `/api/session` | Pública | Retorna o estado atual da sessão (`logged_in` e `username`). |
+| `POST` | `/api/login` | Pública | Valida credenciais e inicia a sessão autenticada. |
+| `POST` | `/api/logout` | Pública | Encerra a sessão do usuário. |
+| `GET` | `/api/version` | Pública | Retorna o hash do commit Git atual e link do repositório. |
+| `POST` | `/api/configurar-chave` | Sessão ativa | Armazena dinamicamente a chave da API Gemini em memória. |
+| `GET` | `/api/status-chave` | Sessão ativa | Informa se uma chave válida do Gemini está configurada. |
+| `POST` | `/api/extrair-pdf` | Sessão ativa | Recebe o arquivo PDF via `multipart/form-data` e retorna os dados extraídos em JSON. |
+| `GET` | `/apidocs` | Pública | Interface interativa Swagger UI / OpenAPI com especificações dos endpoints. |
+
+---
+
+## ☁️ Deploy em Nuvem
+
+O projeto possui suporte nativo para publicação em plataformas em nuvem como o [Render](https://render.com/):
+
+- **Arquivo `deploy/Procfile`**:
+  ```text
+  web: gunicorn --chdir backend server:app --bind 0.0.0.0:$PORT --workers 1 --timeout 120
+  ```
+- **Arquivo `deploy/render.yaml`**:
+  Define a especificação completa de serviço com comando de build (`pip install -r requirements.txt`) e variáveis de ambiente gerenciadas.
+
+---
+
+## 📄 Informações Acadêmicas e Repositório
+
+- **Repositório GitHub**: [https://github.com/Jubsvf/Leitor-de-PDF](https://github.com/Jubsvf/Leitor-de-PDF)
+- **Commit de Referência**: `588c0a4` ([Ver commit no GitHub](https://github.com/Jubsvf/Leitor-de-PDF/commit/588c0a4372e10666c693a53a19f24c84cb2607c0))
+- **Documentação Complementar**: consulte [docs/README.TXT](docs/README.TXT) para o relatório técnico em texto puro.

@@ -1,5 +1,12 @@
-from database import engine, Base, SessionLocal
-from models import TipoDespesa, TipoReceita, Fornecedor, Faturado, Cliente
+try:
+    from .connection import engine, Base, SessionLocal
+    from .models import TipoDespesa, TipoReceita, Fornecedor, Faturado, Cliente
+except ImportError:
+    import sys
+    import os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from database.connection import engine, Base, SessionLocal
+    from database.models import TipoDespesa, TipoReceita, Fornecedor, Faturado, Cliente
 
 CATEGORIAS_DESPESA = [
     {

@@ -322,55 +322,56 @@ class Agente:
         Retorne estritamente o JSON válido correspondente, sem textos explicativos antes ou depois.
         """
 
-        # Se houver GEMINI_API_KEY configurada, tentar chamada via SDK Gemini
-        if self.api_key:
+        # Exige a chave da API Gemini (sem fallback silencioso)
+        if not self.api_key:
+            raise ValueError("Chave da API Gemini não informada! Por favor, informe sua chave no campo da interface ou configure GEMINI_API_KEY no arquivo .env.")
+
+        from google import genai
+        from google.genai import types
+
+        client = genai.Client(api_key=self.api_key)
+        
+        conteudo_prompt = f"{prompt}\n\n--- TEXTO EXTRAÍDO DA NOTA FISCAL (TODAS AS PÁGINAS) ---\n{texto_pdf}"
+        
+        # Lista de modelos oficiais e disponíveis na Google Gemini API
+        modelos_tentativa = [
+            "gemini-3.5-flash-lite",
+            "gemini-3.5-flash",
+            "gemini-3.6-flash",
+            "gemini-3.1-flash-lite",
+        ]
+        response = None
+        ultimo_erro = None
+        modelo_utilizado = None
+
+        for mod in modelos_tentativa:
             try:
-                from google import genai
-                from google.genai import types
+                response = client.models.generate_content(
+                    model=mod,
+                    contents=conteudo_prompt,
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json"
+                    )
+                )
+                if response and response.text:
+                    modelo_utilizado = mod
+                    break
+            except Exception as err_mod:
+                ultimo_erro = err_mod
+                continue
 
-                client = genai.Client(api_key=self.api_key)
-                
-                conteudo_prompt = f"{prompt}\n\n--- TEXTO EXTRAÍDO DA NOTA FISCAL (TODAS AS PÁGINAS) ---\n{texto_pdf}"
-                
-                # Lista de modelos oficiais e estáveis da Google Gemini API
-                modelos_tentativa = [
-                    "gemini-1.5-flash",
-                    "gemini-2.0-flash",
-                    "gemini-1.5-pro",
-                ]
-                response = None
-                ultimo_erro = None
+        if not response or not response.text:
+            raise Exception(f"Erro ao chamar a API Gemini: {ultimo_erro}")
 
-                for mod in modelos_tentativa:
-                    try:
-                        response = client.models.generate_content(
-                            model=mod,
-                            contents=conteudo_prompt,
-                            config=types.GenerateContentConfig(
-                                response_mime_type="application/json"
-                            )
-                        )
-                        if response and response.text:
-                            break
-                    except Exception as err_mod:
-                        ultimo_erro = err_mod
-                        continue
+        resposta_texto = response.text.strip()
+        if resposta_texto.startswith("```"):
+            resposta_texto = re.sub(r"^```[a-zA-Z]*\n?", "", resposta_texto)
+            resposta_texto = re.sub(r"\n?```$", "", resposta_texto).strip()
 
-                if not response or not response.text:
-                    raise ultimo_erro or Exception("Não foi possível obter resposta da API Gemini.")
-
-                resposta_texto = response.text.strip()
-                if resposta_texto.startswith("```"):
-                    resposta_texto = re.sub(r"^```[a-zA-Z]*\n?", "", resposta_texto)
-                    resposta_texto = re.sub(r"\n?```$", "", resposta_texto).strip()
-
-                dados = json.loads(resposta_texto)
-                return self._normalizar_json(dados, texto_pdf)
-            except Exception as e:
-                print(f"Aviso: Erro ao chamar API Gemini ({e}). Utilizando motor heurístico.")
-
-        # Fallback heurístico inteligente
-        return self._extrair_fallback_heuristico(texto_pdf)
+        dados = json.loads(resposta_texto)
+        resultado = self._normalizar_json(dados, texto_pdf)
+        resultado["_origem"] = f"Google Gemini IA ({modelo_utilizado})"
+        return resultado
 
     def _normalizar_json(self, dados, texto_pdf=""):
         """

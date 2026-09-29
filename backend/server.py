@@ -6,26 +6,35 @@ from flask_cors import CORS
 from flasgger import Swagger
 from dotenv import load_dotenv
 
+# Importa o agente da mesma pasta (backend/)
 from agente import Agente
 
-load_dotenv()
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(BASE_DIR)
+FRONTEND_DIR = os.path.join(PROJECT_ROOT, "frontend")
 
-app = Flask(__name__, static_folder=".")
+load_dotenv(os.path.join(PROJECT_ROOT, ".env"))
+
+app = Flask(
+    __name__,
+    static_folder=FRONTEND_DIR,
+    static_url_path=""
+)
 app.secret_key = os.getenv("SECRET_KEY", "fintrack-secret-2025")
 CORS(app, supports_credentials=True)
 
-# Credenciais de acesso (demonstração acadêmica)
+# Credenciais de acesso acadêmico
 APP_USERS = {
     "admin": "admin123"
 }
 
 
 def login_required(f):
-    """Decorator que exige login para acessar rotas protegidas."""
+    """Decorator que exige login ativo para chamadas da API."""
     @wraps(f)
     def decorated(*args, **kwargs):
         if not session.get("logged_in"):
-            return redirect(url_for("login_page"))
+            return jsonify({"erro": "Acesso não autorizado. Faça login primeiro."}), 401
         return f(*args, **kwargs)
     return decorated
 
@@ -41,15 +50,34 @@ swagger = Swagger(app)
 
 
 # ============================================================================
-# ROTAS DE AUTENTICAÇÃO
+# PÁGINA PRINCIPAL & ESTÁTICOS
 # ============================================================================
 
+@app.route("/")
 @app.route("/login")
-def login_page():
-    """Página de Login."""
-    if session.get("logged_in"):
-        return redirect(url_for("index"))
-    return send_from_directory(".", "login.html")
+def index():
+    """Entrega a aplicação unificada (index.html com tela de login e dashboard)."""
+    return send_from_directory(FRONTEND_DIR, "index.html")
+
+
+@app.route("/static/<path:filename>")
+def serve_static_compat(filename):
+    """Compatibilidade para requisições com prefixo /static."""
+    base_name = os.path.basename(filename)
+    return send_from_directory(FRONTEND_DIR, base_name)
+
+
+# ============================================================================
+# ROTAS DE AUTENTICAÇÃO E SESSÃO
+# ============================================================================
+
+@app.route("/api/session", methods=["GET"])
+def api_session():
+    """Retorna o status atual da sessão do usuário."""
+    return jsonify({
+        "logged_in": bool(session.get("logged_in")),
+        "username": session.get("username", "")
+    })
 
 
 @app.route("/api/login", methods=["POST"])
@@ -73,23 +101,6 @@ def api_logout():
 
 
 # ============================================================================
-# PÁGINA PRINCIPAL & ARQUIVOS ESTÁTICOS
-# ============================================================================
-
-@app.route("/")
-@login_required
-def index():
-    """Página principal de Upload e Extração de PDF."""
-    return send_from_directory(".", "index.html")
-
-
-@app.route("/<path:filename>")
-def serve_static(filename):
-    """Serve arquivos estáticos da raiz (style.css, app.js, etc)."""
-    return send_from_directory(".", filename)
-
-
-# ============================================================================
 # INFORMAÇÕES DE VERSÃO E CHAVE DE API EM RUNTIME
 # ============================================================================
 
@@ -98,7 +109,7 @@ def _get_git_hash():
         import subprocess
         result = subprocess.run(
             ["git", "rev-parse", "HEAD"],
-            capture_output=True, text=True, cwd=os.path.dirname(os.path.abspath(__file__))
+            capture_output=True, text=True, cwd=PROJECT_ROOT
         )
         return result.stdout.strip() if result.returncode == 0 else "N/A"
     except Exception:
@@ -122,6 +133,7 @@ def api_version():
 
 
 @app.route("/api/configurar-chave", methods=["POST"])
+@login_required
 def configurar_chave():
     """Configura a chave da API Gemini em tempo real."""
     global _runtime_api_key
@@ -135,6 +147,7 @@ def configurar_chave():
 
 
 @app.route("/api/status-chave", methods=["GET"])
+@login_required
 def status_chave():
     """Verifica se a chave da API Gemini está configurada."""
     chave = _runtime_api_key or os.getenv("GEMINI_API_KEY", "")
@@ -151,6 +164,7 @@ def status_chave():
 # ============================================================================
 
 @app.route("/api/extrair-pdf", methods=["POST"])
+@login_required
 def extrair_pdf():
     """
     Processa uma nota fiscal em PDF e retorna os dados extraídos em formato JSON.
@@ -186,9 +200,17 @@ def extrair_pdf():
     chave_form = (request.form.get("api_key") or "").strip()
     chave_efetiva = chave_form or _runtime_api_key or os.getenv("GEMINI_API_KEY", "")
 
-    agente = Agente(api_key=chave_efetiva if chave_efetiva else None)
-    resultado = agente.extrair_dados(pdf_file)
-    return jsonify(resultado)
+    if not chave_efetiva:
+        return jsonify({
+            "erro": "Chave da API Gemini não configurada! Por favor, cole a chave no campo da interface ou defina GEMINI_API_KEY no arquivo .env."
+        }), 400
+
+    try:
+        agente = Agente(api_key=chave_efetiva)
+        resultado = agente.extrair_dados(pdf_file)
+        return jsonify(resultado)
+    except Exception as e:
+        return jsonify({"erro": f"Erro na API Gemini: {str(e)}"}), 500
 
 
 if __name__ == "__main__":

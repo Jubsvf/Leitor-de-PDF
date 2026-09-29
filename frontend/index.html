@@ -3,14 +3,70 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Extração de Dados de Nota Fiscal</title>
+  <title>Leitor de Nota Fiscal com IA</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app-container">
+
+  <!-- ===================================================================== -->
+  <!-- SEÇÃO 1: TELA DE LOGIN (ABERTA PRIMEIRO)                             -->
+  <!-- ===================================================================== -->
+  <div class="login-wrapper" id="loginSection">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="login-logo-icon">🧾</div>
+        <h1>Leitor de Nota Fiscal</h1>
+        <p>Sistema de Extração Inteligente com IA (Gemini)</p>
+      </div>
+
+      <div class="credentials-hint">
+        <strong>Credenciais de Acesso:</strong>
+        Usuário: <code>admin</code> &nbsp;|&nbsp; Senha: <code>admin123</code>
+      </div>
+
+      <div class="error-msg" id="loginErrorMsg">Usuário ou senha incorretos. Tente novamente.</div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="usernameInput">Usuário</label>
+          <input type="text" id="usernameInput" name="username" placeholder="admin" autocomplete="username" required>
+        </div>
+        <div class="form-group">
+          <label for="passwordInput">Senha</label>
+          <input type="password" id="passwordInput" name="password" placeholder="••••••••" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="btn-login" id="btnLogin">Entrar no Sistema</button>
+      </form>
+
+      <p class="login-footer-note">Atividade Prática Acadêmica — Leitor de NF com IA</p>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- SEÇÃO 2: DASHBOARD PRINCIPAL (REVELADO APÓS LOGIN)                   -->
+  <!-- ===================================================================== -->
+  <div class="app-container hidden" id="appSection">
+
+    <!-- Barra Superior com Identificação e Botão Sair -->
+    <div class="user-top-bar">
+      <div class="user-info">
+        <span>👤</span>
+        <span class="user-name" id="sessionUserName">admin</span>
+        <span class="auth-pill">Conectado</span>
+      </div>
+      <button type="button" class="btn-logout" id="btnLogout" title="Encerrar sessão e voltar ao login">
+        <span>Sair</span>
+        <svg class="logout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+      </button>
+    </div>
+
     <!-- Cabeçalho Principal -->
     <header class="header-section">
       <h1 class="main-title">Extração de Dados de Nota Fiscal</h1>
@@ -99,123 +155,131 @@
     <section class="card hidden" id="resultCard">
       <div class="card-header result-card-header">
         <div class="result-title-group">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="16 18 22 12 16 6"></polyline>
-            <polyline points="8 6 2 12 8 18"></polyline>
+          <svg class="icon text-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
           </svg>
-          <span class="card-title">Resultado da Extração</span>
+          <span class="card-title">Dados Extraídos</span>
         </div>
-
-        <!-- Abas no mesmo estilo do design -->
-        <div class="result-tabs">
-          <button type="button" class="view-tab-btn active" id="tabFormatada">Visualização Formatada</button>
-          <button type="button" class="view-tab-btn" id="tabJson">JSON</button>
+        <!-- Abas de Navegação -->
+        <div class="result-tabs" role="tablist">
+          <button type="button" class="view-tab-btn active" id="tabFormatada" role="tab" aria-selected="true">
+            Visualização Formatada
+          </button>
+          <button type="button" class="view-tab-btn" id="tabJson" role="tab" aria-selected="false">
+            JSON Estruturado
+          </button>
         </div>
       </div>
 
-      <!-- VISUALIZAÇÃO FORMATADA -->
+      <!-- ABA 1: Visualização Formatada Humanizada -->
       <div class="result-body-formatted" id="viewFormatada">
         <!-- Banner de Classificação da Despesa -->
-        <div class="classification-box">
+        <div class="classification-box" id="classificationBanner">
           <div class="classification-badge-tag">
             <svg class="tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-              <line x1="7" y1="7" x2="7.01" y2="7"></line>
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
             </svg>
           </div>
           <div class="classification-info">
-            <span class="class-overline">CLASSIFICAÇÃO DA DESPESA (INTERPRETADO PELO GEMINI)</span>
+            <span class="class-overline" id="fmtOverline">CLASSIFICAÇÃO DA DESPESA (INTERPRETADO PELO GEMINI)</span>
             <div class="class-title" id="fmtCategoria">MANUTENÇÃO E OPERAÇÃO</div>
             <div class="class-terms-label">Termos detectados que embasaram a classificação:</div>
             <div class="terms-pills" id="fmtTermos">
-              <!-- Preenchido dinamicamente -->
+              <span class="pill-item">PEÇAS</span>
             </div>
           </div>
         </div>
 
-        <!-- Grid de Seções de Informações -->
+        <!-- Grid de Metadados Principais -->
         <div class="details-grid">
-          <!-- Card: Fornecedor / Emitente -->
+          <!-- Bloco Emitente -->
           <div class="detail-box">
             <div class="detail-box-title">
               <span class="detail-icon">🏢</span>
-              <span>Fornecedor / Emitente</span>
+              <span>EMITENTE (FORNECEDOR)</span>
             </div>
             <div class="field-item">
-              <span class="field-name">RAZÃO SOCIAL:</span>
-              <span class="field-text" id="fmtRazaoSocial">-</span>
+              <span class="field-name">Razão Social</span>
+              <span class="field-text bold" id="fmtRazaoSocial">—</span>
             </div>
             <div class="field-item">
-              <span class="field-name">NOME FANTASIA:</span>
-              <span class="field-text" id="fmtNomeFantasia">-</span>
+              <span class="field-name">Nome Fantasia</span>
+              <span class="field-text" id="fmtNomeFantasia">—</span>
             </div>
             <div class="field-item">
-              <span class="field-name">CNPJ:</span>
-              <span class="field-text bold" id="fmtCnpjEmitente">-</span>
+              <span class="field-name">CNPJ</span>
+              <span class="field-text" id="fmtCnpjEmitente">—</span>
             </div>
           </div>
 
-          <!-- Card: Faturado / Destinatário -->
+          <!-- Bloco Destinatário -->
           <div class="detail-box">
             <div class="detail-box-title">
               <span class="detail-icon">👤</span>
-              <span>Faturado / Destinatário</span>
+              <span>DESTINATÁRIO (FATURADO)</span>
             </div>
             <div class="field-item">
-              <span class="field-name">NOME COMPLETO:</span>
-              <span class="field-text" id="fmtNomeDestinatario">-</span>
+              <span class="field-name">Nome Completo</span>
+              <span class="field-text bold" id="fmtNomeDestinatario">—</span>
             </div>
             <div class="field-item">
-              <span class="field-name">CPF / CNPJ:</span>
-              <span class="field-text bold" id="fmtCpfDestinatario">-</span>
+              <span class="field-name">CPF / CNPJ</span>
+              <span class="field-text" id="fmtCpfDestinatario">—</span>
             </div>
           </div>
 
-          <!-- Card: Dados da Nota Fiscal -->
+          <!-- Bloco Dados da Nota -->
           <div class="detail-box">
             <div class="detail-box-title">
               <span class="detail-icon">📄</span>
-              <span>Dados da Nota Fiscal</span>
+              <span>DADOS DA NOTA FISCAL</span>
             </div>
             <div class="field-item">
-              <span class="field-name">NÚMERO DA NF:</span>
-              <span class="field-text bold" id="fmtNumeroNf">-</span>
+              <span class="field-name">Número da Nota</span>
+              <span class="field-text bold" id="fmtNumeroNf">—</span>
             </div>
             <div class="field-item">
-              <span class="field-name">DATA DE EMISSÃO:</span>
-              <span class="field-text" id="fmtDataEmissao">-</span>
+              <span class="field-name">Data de Emissão</span>
+              <span class="field-text" id="fmtDataEmissao">—</span>
             </div>
             <div class="field-item">
-              <span class="field-name">DATA DE VENCIMENTO:</span>
-              <span class="field-text" id="fmtDataVencimento">-</span>
+              <span class="field-name">Data de Vencimento</span>
+              <span class="field-text" id="fmtDataVencimento">—</span>
+            </div>
+          </div>
+
+          <!-- Bloco Totalizadores -->
+          <div class="detail-box">
+            <div class="detail-box-title">
+              <span class="detail-icon">💰</span>
+              <span>VALOR TOTAL DA NOTA</span>
             </div>
             <div class="field-item">
-              <span class="field-name">VALOR TOTAL:</span>
+              <span class="field-name">Total a Pagar</span>
               <span class="field-text price-highlight" id="fmtValorTotal">R$ 0,00</span>
             </div>
             <div class="field-item">
-              <span class="field-name">PARCELAS:</span>
-              <span class="field-text" id="fmtParcelas">1 parcela(s)</span>
+              <span class="field-name">Condição de Pagamento</span>
+              <span class="field-text" id="fmtParcelas">—</span>
             </div>
           </div>
         </div>
 
-        <!-- Descrição dos Produtos / Serviços -->
+        <!-- Bloco de Produtos / Serviços -->
         <div class="products-section">
           <div class="products-title">
-            <span class="detail-icon">📦</span>
-            <span>Descrição dos Produtos / Serviços</span>
+            <span>📦</span>
+            <span>DESCRIÇÃO DOS PRODUTOS / SERVIÇOS</span>
           </div>
-          <div class="products-box" id="fmtProdutos">
-            -
-          </div>
+          <div class="products-box" id="fmtProdutos">—</div>
         </div>
       </div>
 
-      <!-- VISUALIZAÇÃO EM JSON -->
+      <!-- ABA 2: Visualização em Código JSON Bruto -->
       <div class="result-body-json hidden" id="viewJson">
         <div class="json-toolbar">
-          <span class="json-toolbar-label">JSON estruturado retornado pelo processador:</span>
+          <span class="json-toolbar-label">Payload JSON retornado pelo Agente de IA:</span>
           <button type="button" class="btn-copy-code" id="btnCopyJson">Copiar JSON</button>
         </div>
         <pre id="jsonResult"></pre>

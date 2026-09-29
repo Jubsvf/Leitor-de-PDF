@@ -4,6 +4,17 @@
 
 const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port !== '5000' ? 'http://127.0.0.1:5000' : '';
 
+// Elementos do DOM - Autenticação & Sessão
+const loginSection = document.getElementById('loginSection');
+const appSection = document.getElementById('appSection');
+const loginForm = document.getElementById('loginForm');
+const usernameInput = document.getElementById('usernameInput');
+const passwordInput = document.getElementById('passwordInput');
+const btnLogin = document.getElementById('btnLogin');
+const loginErrorMsg = document.getElementById('loginErrorMsg');
+const btnLogout = document.getElementById('btnLogout');
+const sessionUserName = document.getElementById('sessionUserName');
+
 // Elementos do DOM - Upload
 const pdfInput = document.getElementById('pdfInput');
 const fileStatusText = document.getElementById('fileStatusText');
@@ -157,6 +168,15 @@ function renderDadosExtraidos(dados) {
   }
 
   // 2. Preencher Visualização Formatada
+  const fmtOverline = document.getElementById('fmtOverline');
+  if (fmtOverline) {
+    if (dados._origem) {
+      fmtOverline.textContent = `CLASSIFICAÇÃO DA DESPESA (PROCESSADO POR: ${dados._origem.toUpperCase()})`;
+    } else {
+      fmtOverline.textContent = 'CLASSIFICAÇÃO DA DESPESA (INTERPRETADO PELO GEMINI)';
+    }
+  }
+
   const classif = dados['CLASSIFICAÇÃO'] || {};
   const categoria = (classif.categoria || dados['Categoria'] || 'MANUTENÇÃO E OPERAÇÃO').toUpperCase();
   if (fmtCategoria) fmtCategoria.textContent = categoria;
@@ -258,7 +278,7 @@ async function verificarStatusChave() {
             apiKeyInput.placeholder = `Chave atual: ${data.preview}`;
           }
         } else {
-          keyStatusBadge.textContent = 'Não configurada (Modo Fallback)';
+          keyStatusBadge.textContent = 'Não configurada (Chave Obrigatória)';
           keyStatusBadge.className = 'status-badge';
         }
       }
@@ -326,8 +346,91 @@ async function carregarVersao() {
   }
 }
 
-// Inicialização
-document.addEventListener('DOMContentLoaded', () => {
+// ==========================================================================
+// CONTROLE DE AUTENTICAÇÃO E SESSÃO
+// ==========================================================================
+
+function exibirDashboard(username) {
+  if (sessionUserName && username) sessionUserName.textContent = username;
+  if (loginSection) loginSection.classList.add('hidden');
+  if (appSection) appSection.classList.remove('hidden');
   verificarStatusChave();
   carregarVersao();
+}
+
+function exibirLogin() {
+  if (loginSection) loginSection.classList.remove('hidden');
+  if (appSection) appSection.classList.add('hidden');
+  if (loginErrorMsg) loginErrorMsg.classList.remove('visible');
+  if (passwordInput) passwordInput.value = '';
+}
+
+async function checarSessao() {
+  try {
+    const res = await fetch(`${API_BASE}/api/session`, { credentials: 'include' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.logged_in) {
+        exibirDashboard(data.username || 'admin');
+        return;
+      }
+    }
+  } catch (err) {
+    console.warn('Servidor offline ou sem sessão ativa:', err);
+  }
+  exibirLogin();
+}
+
+if (loginForm) {
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (loginErrorMsg) loginErrorMsg.classList.remove('visible');
+    btnLogin.disabled = true;
+    btnLogin.textContent = 'Entrando...';
+
+    const username = (usernameInput.value || '').trim();
+    const password = passwordInput.value || '';
+
+    try {
+      const res = await fetch(`${API_BASE}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+        credentials: 'include'
+      });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        exibirDashboard(username);
+      } else {
+        if (loginErrorMsg) {
+          loginErrorMsg.textContent = data.erro || 'Usuário ou senha incorretos.';
+          loginErrorMsg.classList.add('visible');
+        }
+      }
+    } catch (err) {
+      if (loginErrorMsg) {
+        loginErrorMsg.textContent = 'Erro de comunicação com o servidor: ' + err.message;
+        loginErrorMsg.classList.add('visible');
+      }
+    } finally {
+      btnLogin.disabled = false;
+      btnLogin.textContent = 'Entrar no Sistema';
+    }
+  });
+}
+
+if (btnLogout) {
+  btnLogout.addEventListener('click', async () => {
+    try {
+      await fetch(`${API_BASE}/api/logout`, { method: 'POST', credentials: 'include' });
+    } catch (e) {
+      console.warn('Erro ao deslogar:', e);
+    }
+    exibirLogin();
+  });
+}
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', () => {
+  checarSessao();
 });

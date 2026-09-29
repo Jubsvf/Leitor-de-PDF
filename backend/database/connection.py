@@ -22,9 +22,9 @@ try:
     # Test the connection; if it fails, fallback will be used
     with engine.connect() as _:
         pass
-except Exception:
-    # Fallback to SQLite local file if PostgreSQL is unavailable
-    fallback_url = "sqlite:///fintrack.db"
+    # Fallback to SQLite local file inside database/
+    db_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fintrack.db")
+    fallback_url = f"sqlite:///{db_file}"
     engine = create_engine(fallback_url, echo=False)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

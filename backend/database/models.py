@@ -11,7 +11,7 @@ from sqlalchemy import (
     ForeignKey,
 )
 from sqlalchemy.orm import relationship
-from database import Base
+from .connection import Base
 
 
 class Fornecedor(Base):

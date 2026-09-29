@@ -1,9 +1,9 @@
-﻿services:
+services:
   - type: web
     name: leitor-de-nf
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn server:app --bind 0.0.0.0:$PORT --workers 1 --timeout 120
+    startCommand: gunicorn --chdir backend server:app --bind 0.0.0.0:$PORT --workers 1 --timeout 120
     envVars:
       - key: GEMINI_API_KEY
         sync: false
